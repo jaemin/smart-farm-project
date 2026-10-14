@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% set active_tab = 'sensor_range' %}
+{% block title %}수경재배 환경 제어 및 모니터링 시스템{% endblock %}
+
+{% block content %}
+<!-- 사용자 CSS (style.css 적용) -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/control_mode.css') }}" />
+<div class="control-header">
+    <h2>센서 작동 범위 설정</h2>
+    <p>각 센서의 자동 제어에 적용할 최소값과 최대값을 설정하세요.</p>
+</div>
+
+<div class="control-card-container">
+    <form id="control-form" method="POST" action="/sensor_range/save">
+        <div class="control-scroll-list">
+            <table class="control-table">
+                <thead>
+                    <tr>
+                        <th>장치 이름</th>
+                        <th>현재 상태</th>
+                        <th>설정 범위</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 1. 온도 -->
+                    {% set item = control_mode_data.temp if control_mode_data and control_mode_data.temp else {} %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else true %}
+                    <tr>
+                        <td>온도</td>
+                        <td>{{sensors.temp.current}}</td>
+                        <td>
+                            <div class="range-box manual-input">
+                                <input type="text" name="temp_min" value="{{ sensors.temp.min }}"> ~
+                                <input type="text" name="temp_max" value="{{ sensors.temp.max }}">
+                            </div>
+                        </td>
+                        <td>온도가 설정 범위 내로 유지되도록 제어합니다.</td>
+                    </tr>
+
+                    <!-- 2. 습도 -->
+                    {% set item = control_mode_data.humidity if control_mode_data and control_mode_data.humidity else {}
+                    %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else false %}
+                    <tr>
+                        <td>습도</td>
+                        <td>{{sensors.humidity.current}}</td>
+                        <td>
+                            <div class="range-box manual-input">
+                                <input type="text" name="humidity_min" value="{{ sensors.humidity.min }}"> ~
+                                <input type="text" name="humidity_max" value="{{ sensors.humidity.max }}">
+                            </div>
+                        </td>
+                        <td>습도가 설정 범위 내로 유지되도록 제어합니다.</td>
+                    </tr>
+
+                    <!-- 3. 조도 -->
+                    {% set item = control_mode_data.lux if control_mode_data and control_mode_data.lux else {} %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else false %}
+                    <tr>
+                        <td>조도</td>
+                        <td>{{sensors.lux.current}}</td>
+                        <td>
+                            <div class="range-box manual-input">
+                                <input type="text" name="lux_min" value="{{ sensors.lux.min }}"> ~
+                                <input type="text" name="lux_max" value="{{ sensors.lux.max }}">
+                            </div>
+                        </td>
+                        <td>조도가 설정 범위 내로 유지되도록 제어합니다.</td>
+                    </tr>
+
+                    <!-- 4. 수온 -->
+                    {% set item = control_mode_data.water_temp if control_mode_data and control_mode_data.water_temp
+                    else {} %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else true %}
+                    <tr>
+                        <td>수온</td>
+                        <td>{{sensors.water_temp.current}}</td>
+                        <td>
+                            <div class="range-box manual-input">
+                                <input type="text" name="water_temp_min" value="{{ sensors.water_temp.min }}"> ~
+                                <input type="text" name="water_temp_max" value="{{ sensors.water_temp.max }}">
+                            </div>
+                        </td>
+                        <td>수온이 설정 범위 내로 유지되도록 제어합니다.</td>
+                    </tr>
+
+                    <!-- 5. 유량 -->
+                    {% set item = control_mode_data.flow if control_mode_data and control_mode_data.flow else {} %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else true %}
+                    <tr>
+                        <td>유량</td>
+                        <td>{{sensors.flow.current}}</td>
+                        <td>
+                            <div class="range-box manual-input">
+                                <input type="text" name="flow_min" value="{{ sensors.flow.min }}"> ~
+                                <input type="text" name="flow_max" value="{{ sensors.flow.max }}">
+                            </div>
+                        </td>
+                        <td>유량이 설정 범위 내로 유지되도록 제어합니다.</td>
+                    </tr>
+
+                    <!-- 6. pH -->
+                    {% set item = control_mode_data.ph if control_mode_data and control_mode_data.ph else {} %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else true %}
+                    <tr>
+                        <td>pH</td>
+                        <td>{{sensors.ph.current}}</td>
+                        <td>
+                            <div class="range-box manual-input">
+                                <input type="text" name="ph_min" value="{{ sensors.ph.min }}"> ~
+                                <input type="text" name="ph_max" value="{{ sensors.ph.max }}">
+                            </div>
+                        </td>
+                        <td>pH가 설정 범위 내로 유지되도록 제어합니다.</td>
+                    </tr>
+
+                    <!-- 7. TDS -->
+                    {% set item = control_mode_data.tds if control_mode_data and control_mode_data.tds else {} %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else false %}
+                    <tr>
+                        <td>TDS</td>
+                        <td>{{sensors.tds.current}}</td>
+                        <td>
+                            <div class="range-box manual-input">
+                                <input type="text" name="tds_min" value="{{ sensors.tds.min }}"> ~
+                                <input type="text" name="tds_max" value="{{ sensors.tds.max }}">
+                            </div>
+                        </td>
+                        <td>TDS가 설정 범위 내로 유지되도록 제어합니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bottom-actions">
+            <button type="button" class="btn-save-setting" id="saveBtn">설정 저장</button>
+            <button type="button" class="btn-reset-setting" id="resetBtn">기본값 복원</button>
+        </div>
+    </form>
+</div>
+<script src="{{ url_for('static', filename='js/sensor_range.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,338 @@
+/* 3. 본문 콘텐츠 스타일 */
+.title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.device-title {
+    font-size: 32px;
+    color: #2b7819;
+    font-weight: 900;
+}
+
+.status-badge {
+    border-radius: 12px;
+    padding: 4px 16px;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.status-badge.off {
+    border: 2px solid #aaa;
+    color: #666;
+    background-color: #fff;
+}
+
+.status-badge.on {
+    border: 2px solid #2b7819;
+    color: #fff;
+    background-color: #2b7819;
+}
+
+.refresh-bar {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-refresh {
+    border: 1px solid #888;
+    background-color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-refresh2 {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+.btn-refresh3 {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* 카드 그리드 */
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.card-box {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px 16px 10px 16px;
+    min-height: 110px;
+}
+
+.card-box.border-green {
+    border: 2px solid #2b7819;
+}
+
+.card-box.active-on {
+    border: 2px solid #2b7819;
+    background-color: #f4fbf2;
+}
+
+.col-span-2 {
+    grid-column: span 2;
+}
+
+.card-title {
+    font-weight: 700;
+    color: #666;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.card-content {
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.text-green {
+    color: #2b7819;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.text-muted {
+    color: #888;
+}
+
+.sensor-value-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-top: 10px;
+}
+
+.divider {
+    width: 1px;
+    height: 30px;
+    background-color: #ddd;
+}
+
+/* 라디오 버튼 & 규칙 */
+.mode-select-group {
+    display: flex;
+    gap: 40px;
+    margin-top: 12px;
+}
+
+.mode-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #888;
+}
+
+.mode-label.active {
+    color: #2b7819;
+}
+
+.radio-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.radio-circle.green {
+    background-color: #68b855;
+}
+
+.radio-circle.gray {
+    background-color: #ccc;
+}
+
+.rule-text p {
+    margin-bottom: 4px;
+    color: #555;
+    font-size: 14px;
+}
+
+/* 로그 테이블 */
+.table-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-csv {
+    background-color: #89c578;
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.log-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.log-table th {
+    background-color: #d9ebd3;
+    padding: 10px;
+    border: 1px solid #b2d8a6;
+    color: #333;
+}
+
+.log-table td {
+    padding: 10px;
+    border: 1px solid #eee;
+    font-size: 14px;
+}
+
+.text-blue {
+    color: #007bff;
+    font-weight: 700;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    color: #666;
+    font-weight: 700;
+}
+
+.page-num {
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+.page-num.active {
+    color: #000;
+    font-weight: 900;
+    border-bottom: 2px solid #2b7819;
+}
+
+.page-arrow {
+    cursor: pointer;
+}
+
+
+/* 센서 스타일 */
+
+.sensor-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.status-badge.status-good {
+    background-color: #dbeed8;
+    color: #2b7819;
+    border: 1px solid #2b7819;
+    padding: 4px 14px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.status-desc {
+    font-size: 14px;
+    color: #666;
+    margin-left: 8px;
+}
+
+.sensor-summary-card {
+    width: 200px;
+    text-align: right;
+    border: 2px solid #2b7819 !important;
+    background-color: #fff;
+    padding: 12px 16px;
+    border-radius: 8px;
+}
+
+.sensor-summary-card .card-title {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 2px;
+}
+
+.sensor-big-value {
+    font-size: 30px;
+    font-weight: 800;
+    color: #2b7819;
+    line-height: 1.1;
+}
+
+.sensor-big-value .unit {
+    font-size: 20px;
+    font-weight: normal;
+}
+
+.optimal-range {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+}
+
+/* 그래프 감싸는 카드 박스 및 캔버스 크기 지정 */
+.graph-card-box {
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+}
+
+
+/* 액추에이터 상태 배지 (Actuator Status Badges) */
+.status-badge.actuator-open {
+    background-color: #e8f5e9;
+    color: #2b7819;
+    border: 1.5px solid #2b7819;
+    font-weight: bold;
+}
+
+.status-badge.actuator-close {
+    background-color: #f5f5f5;
+    color: #666666;
+    border: 1.5px solid #cccccc;
+    font-weight: bold;
+}
+
+/* 제어모드 스위치 인디케이터 */
+.mode-indicator {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin-left: 4px;
+}
+
+.mode-indicator.active {
+    background-color: #68b855;
+}
+
+.mode-indicator.inactive {
+    background-color: #cccccc;
+}

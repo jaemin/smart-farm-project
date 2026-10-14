@@ -1,0 +1,456 @@
+{% extends 'base.html' %}
+{% set active_tab = 'alarm' %}
+
+{% block content %}
+
+<!-------------------------------------------------------------------------------------------------------->
+<style>
+    .btn-period {
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        color: #555;
+        padding: 4px 10px;
+        font-size: 0.85rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-period.active {
+        background-color: #a4d38c;
+        color: #ffffff;
+        border-color: #a4d38c;
+        font-weight: bold;
+    }
+
+    .date-input {
+        font-family: inherit;
+        font-size: 0.85rem;
+        color: #555555;
+        border: 1px solid #cccccc;
+        border-radius: 4px;
+        padding: 3px 8px;
+        outline: none;
+        background-color: #ffffff;
+    }
+
+    .date-input::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+    }
+
+    .btn-search {
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        color: #333;
+        padding: 4px 12px;
+        font-size: 0.85rem;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-search:hover {
+        background-color: #f5f5f5;
+    }
+
+    /* CSV 버튼 : 전체, 주의, 경고 선택할 수 있게끔 */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .modal-content {
+        background: #ffffff;
+        border-radius: 12px;
+        width: 340px;
+        padding: 24px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-top: 6px solid #a4d38c;
+        text-align: center;
+    }
+
+    .modal-btn {
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        border-radius: 6px;
+        border: 1px solid #a4d38c;
+        background-color: #f4fce3;
+        color: #2b8a3e;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .modal-btn:hover {
+        background-color: #a4d38c;
+        color: white;
+    }
+
+    .modal-close-btn {
+        margin-top: 15px;
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 0.85rem;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+</style>
+<!-------------------------------------------------------------------------------------------------------->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+<div id="alarm-initial-data" data-logs='{{ logs | default([]) | tojson }}' style="display: none;"></div>
+
+<!-- 제목 -->
+<div class="sensor-header-row mb-3">
+    <div class="title-section">
+        <h2 class="device-title">알람</h2>
+        <span class="status-desc" style="display: block; margin-top: 4px; color: #666;">
+            각 장치에서 발생한 주의/경고 알람 이력과 자동 제어 조치 내역을 확인할 수 있습니다.
+        </span>
+    </div>
+</div>
+
+<div class="refresh-bar d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <span>마지막 업데이트 : <span id="current-time"></span></span>
+        <img src="{{ url_for('static', filename='img/refresh.png') }}" id="btn-refresh" class="btn-refresh2">
+    </div>
+</div>
+
+<!-- 알람 및 제어 로그 -->
+<div class="card-box col-span-2">
+
+    <!-- (제목 + 필터 + 달력) -->
+    <div class="table-header-bar d-flex justify-content-between align-items-center mb-3"
+        style="flex-wrap: wrap; gap: 15px;">
+
+        <!-- 알람 박스 -->
+        <div class="d-flex align-items-center" style="gap: 15px;">
+            <div class="card-title" style="font-size: 1.1rem; font-weight: bold;">주의 및 경고 알람</div>
+
+
+            <div class="alarm-filter-group" style="display: flex; gap: 6px;">
+                <button type="button" class="btn-filter active" data-filter="ALL" style="padding: 4px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid #bfdbfe; 
+        background: #eff6ff; color: #1d4ed8; font-weight: bold; cursor: pointer;">전체보기</button>
+
+                <button type="button" class="btn-filter" data-filter="WARNING" style="padding: 4px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid #fed7aa; 
+        background: #fff7ed; color: #c2410c; cursor: pointer;">주의</button>
+
+                <button type="button" class="btn-filter" data-filter="DANGER" style="padding: 4px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid #fecaca; 
+        background: #fef2f2; color: #dc2626; cursor: pointer;">경고</button>
+            </div>
+        </div>
+
+        <!-- 기간 조회 달력 -->
+        <div class="d-flex align-items-center" style="gap: 8px;">
+            <button type="button" class="btn-period" onclick="setPeriod('7d', this)">최근 7일</button>
+            <button type="button" class="btn-period" onclick="setPeriod('30d', this)">최근 30일</button>
+            <button type="button" class="btn-period active" onclick="setPeriod('custom', this)">직접 선택</button>
+
+            <input type="date" id="startDate" class="date-input">
+            <span style="color: #888;">~</span>
+            <input type="date" id="endDate" class="date-input">
+
+            <button type="button" class="btn-search" onclick="loadAlarmData(1)">조회</button>
+        </div>
+
+    </div>
+
+    <!-- CSV 다운로드 버튼 -->
+    <div style="width: 100%; text-align: right; margin-bottom: 8px;">
+        <button type="button" onclick="openCsvModal()" class="btn-csv"
+            style="display: inline-block; cursor: pointer; border: none;">CSV 다운로드</button>
+    </div>
+
+    <!-- 테이블 -->
+    <table class="log-table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #eee; text-align: center;">
+                <th style="width: 70px; padding: 10px; text-align: center;">번호</th>
+                <th style="width: 170px; padding: 10px; text-align: center;">시간</th>
+                <th style="width: 120px; padding: 10px; text-align: center;">장치</th>
+                <th style="width: 90px; padding: 10px; text-align: center;">상태</th>
+                <th style="padding: 10px; text-align: center;">알람 내용</th>
+                <th style="padding: 10px; text-align: center;">조치 내용</th>
+            </tr>
+        </thead>
+        <tbody id="alarm-table-body">
+        </tbody>
+    </table>
+
+    <!-- 페이지네이션 -->
+    <div class="pagination-wrapper mt-4" style="display: flex; justify-content: center;">
+        <nav>
+            <ul class="pagination mb-0" id="pagination-list"
+                style="display: inline-flex; list-style: none; gap: 5px; padding: 0;"></ul>
+        </nav>
+    </div>
+</div>
+
+<!-- CSV 다운로드 (주의, 경고 데이터 구분해서 다운로드 가능) -->
+<div id="csvModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="margin-top: 0; color: #2b8a3e; font-size: 1.15rem;">CSV 다운로드</h3>
+        <p style="color: #666; font-size: 0.85rem; margin-bottom: 15px;">다운로드할 알람 항목을 선택해 주세요.</p>
+
+        <button class="modal-btn" onclick="downloadCsv('ALL')">전체 알람</button>
+        <button class="modal-btn" onclick="downloadCsv('WARNING')">주의 알람</button>
+        <button class="modal-btn" onclick="downloadCsv('DANGER')">경고 알람</button>
+
+        <div>
+            <button class="modal-close-btn" onclick="closeCsvModal()">닫기</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.setTimeout('window.location.reload()', 60000);
+
+    let currentPage = 1;
+    const PAGE_SIZE = 10;
+    let currentFilter = 'ALL';
+
+    const dataElem = document.getElementById('alarm-initial-data');
+    const initialLogs = dataElem && dataElem.dataset.logs ? JSON.parse(dataElem.dataset.logs) : [];
+
+    function getFormattedNow() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mi = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+    }
+
+    function setPeriod(type, btn) {
+        document.querySelectorAll('.btn-period').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const endDate = new Date();
+        const startDate = new Date();
+
+        // 조회 기간 설정 및 수정!
+        if (type === '7d') {
+            startDate.setDate(endDate.getDate() - 7);
+            document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+        } else if (type === '30d') {
+            startDate.setDate(endDate.getDate() - 30);
+            document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+        }
+    }
+
+    // 알람 fetch
+    function loadAlarmData(page = 1) {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+
+        fetch(`/api/alarms?page=${page}&per_page=${PAGE_SIZE}&filter=${currentFilter}&start_date=${start}&end_date=${end}`)
+            .then(response => {
+                if (!response.ok) throw new Error("API 없음");
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('current-time').innerText = getFormattedNow();
+                renderTable(data.table, page);
+                renderPagination(data.pagination.total_pages, data.pagination.current_page);
+            })
+            .catch(err => {
+                // API 연동 전이거나 DB 호출 실패 시 초기 데이터로 출력
+                document.getElementById('current-time').innerText = getFormattedNow();
+
+                let filtered = initialLogs;
+                if (currentFilter === 'WARNING') {
+                    filtered = initialLogs.filter(l => l.status === '주의');
+                } else if (currentFilter === 'DANGER') {
+                    filtered = initialLogs.filter(l => l.status === '경고');
+                }
+
+                const startIdx = (page - 1) * PAGE_SIZE;
+                const pageData = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+                const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+
+                // 테이블 데이터로 잘 들어오게 바꾸는 구문
+                const tableFormatted = pageData.map(item => ({
+                    recorded_at: item.time || item.recorded_at,
+                    device_name: item.device || item.device_name,
+                    status: item.status,
+                    status_class: item.status === '주의' ? 'warning' : (item.status === '경고' ? 'danger' : 'good'),
+                    message: item.message,
+                    action: item.action
+                }));
+
+                renderTable(tableFormatted, page);
+                renderPagination(totalPages, page);
+            });
+    }
+
+    function renderTable(tableData, page) {
+        const tbody = document.getElementById('alarm-table-body');
+        const startNum = (page - 1) * PAGE_SIZE;
+
+        if (!tableData || tableData.length === 0) {
+            tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 30px; color: #888;">
+            발생한 주의/경고 알람 이력이 없습니다.
+          </td>
+        </tr>
+      `;
+            return;
+        }
+
+        tbody.innerHTML = tableData.map((row, index) => {
+            let badgeHtml = '';
+            let actionColor = '#333'; // 주의 색깔
+
+            if (row.status_class === 'warning' || row.status === '주의') {
+                badgeHtml = `<span style="background-color: #ffedd5; color: #c2410c; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">주의</span>`;
+                actionColor = '#333333'; // 주의 - 조치내용 - 검정
+            } else if (row.status_class === 'danger' || row.status === '경고') {
+                badgeHtml = `<span style="background-color: #fee2e2; color: #dc2626; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">경고</span>`;
+                actionColor = '#dc2626'; // 경고 - 조치내용 - 빨강
+            } else {
+                badgeHtml = `<span style="background-color: #dbeafe; color: #2563eb; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">${row.status}</span>`;
+            }
+
+            return `
+        <tr style="border-bottom: 1px solid #f0f0f0;">
+          <td style="text-align: center; color: #666; font-weight: 500; padding: 12px 10px;">${startNum + index + 1}</td>
+          <td style="text-align: center; padding: 12px 10px; color: #444;">${row.recorded_at}</td>
+          <td style="text-align: center; padding: 12px 10px; font-weight: 600;">${row.device_name}</td>
+          <td style="text-align: center; padding: 12px 10px;">${badgeHtml}</td>
+          <td style="padding: 12px 10px; color: #333;">${row.message}</td>
+          <!-- 경고일 때만 빨강, 주의일 땐 검정색 처리 -->
+          <td style="padding: 12px 10px; color: ${actionColor}; font-weight: 500;">${row.action || '-'}</td>
+        </tr>
+      `;
+        }).join('');
+    }
+
+    function renderPagination(totalPages, page) {
+        currentPage = page;
+        const paginationList = document.getElementById('pagination-list');
+        let html = '';
+
+        if (totalPages <= 0) {
+            paginationList.innerHTML = '';
+            return;
+        }
+
+        const pageBlockSize = 5;
+        const currentBlock = Math.ceil(page / pageBlockSize);
+        const startPage = (currentBlock - 1) * pageBlockSize + 1;
+        let endPage = startPage + pageBlockSize - 1;
+        if (endPage > totalPages) endPage = totalPages;
+
+        const baseStyle = "padding: 6px 12px; border: 1px solid #ddd; text-decoration: none; border-radius: 4px; display: inline-block;";
+
+        if (startPage > 1) {
+            html += `
+        <li style="display: inline;">
+          <a href="#" onclick="loadAlarmData(${startPage - 1}); return false;" style="${baseStyle} background-color: #fff; color: #555;">&laquo;</a>
+        </li>
+      `;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const activeStyle = (i === page)
+                ? 'font-weight: bold; background-color: #68b855; color: white; border-color: #68b855;'
+                : 'background-color: #f8f9fa; color: #333;';
+
+            html += `
+        <li style="display: inline;">
+          <a href="#" onclick="loadAlarmData(${i}); return false;" style="${baseStyle} ${activeStyle}">
+             ${i}
+          </a>
+        </li>
+      `;
+        }
+
+        if (endPage < totalPages) {
+            html += `
+        <li style="display: inline;">
+          <a href="#" onclick="loadAlarmData(${endPage + 1}); return false;" 
+          style="${baseStyle} background-color: #fff; color: #555;">&raquo;</a>
+        </li>
+      `;
+        }
+
+        paginationList.innerHTML = html;
+    }
+
+    // --- CSV 다운로드---
+    function openCsvModal() {
+        document.getElementById('csvModal').style.display = 'flex';
+    }
+
+    function closeCsvModal() {
+        document.getElementById('csvModal').style.display = 'none';
+    }
+
+    function downloadCsv(filterType) {
+        window.location.href = `/api/alarms/download_csv?filter=${filterType}`;
+        closeCsvModal();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const end = new Date();
+        const start = new Date();
+        start.setDate(end.getDate() - 7);
+
+        document.getElementById('startDate').value = start.toISOString().split('T')[0];
+        document.getElementById('endDate').value = end.toISOString().split('T')[0];
+
+        loadAlarmData(1);
+
+        document.getElementById('btn-refresh').addEventListener('click', function () {
+            loadAlarmData(currentPage);
+        });
+
+        const filterBtns = document.querySelectorAll('.btn-filter');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                filterBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.fontWeight = 'normal';
+                    b.style.background = '#fff';
+                    b.style.color = '#333';
+                    b.style.borderColor = '#ccc';
+                });
+
+                this.classList.add('active');
+                this.style.fontWeight = 'bold';
+                currentFilter = this.getAttribute('data-filter');
+
+                if (currentFilter === 'ALL') {
+                    this.style.background = '#eff6ff';
+                    this.style.color = '#1d4ed8';
+                    this.style.borderColor = '#bfdbfe';
+                } else if (currentFilter === 'WARNING') {
+                    this.style.background = '#fff7ed';
+                    this.style.color = '#c2410c';
+                    this.style.borderColor = '#fed7aa';
+                } else if (currentFilter === 'DANGER') {
+                    this.style.background = '#fef2f2';
+                    this.style.color = '#dc2626';
+                    this.style.borderColor = '#fecaca';
+                }
+
+                loadAlarmData(1);
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>아이디 찾기</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/users_base.css') }}">
+</head>
+
+<body>
+
+    <div class="signup-page">
+        <div class="signup-container">
+
+            <div class="signup-title">
+                <h1>수경재배</h1>
+                <h2>환경제어 및 모니터링 시스템</h2>
+            </div>
+
+            <div class="card signup-card">
+
+                <div class="card-body">
+
+                    <h3 class="signup-heading">
+                        아이디 찾기
+                    </h3>
+
+                    <form method="post" class="signup-form">
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                이름
+                            </label>
+
+                            <input
+                                type="text"
+                                name="name"
+                                class="form-control"
+                                placeholder="가입할 때 입력한 이름"
+                                required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                이메일
+                            </label>
+
+                            <input
+                                type="email"
+                                name="email"
+                                class="form-control"
+                                placeholder="가입할 때 입력한 이메일"
+                                required>
+                        </div>
+
+                        <div class="mt-4">
+                            <button
+                                type="submit"
+                                class="btn btn-success w-100">
+
+                                아이디 찾기
+
+                            </button>
+                        </div>
+
+                    </form>
+
+                    <div class="signup-links">
+
+                        <a href="/login">
+                            로그인으로 돌아가기
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <script>
+                alert("{{ message }}");
+            </script>
+        {% endfor %}
+    {% endwith %}
+</body>
+</html>

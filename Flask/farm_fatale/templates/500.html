@@ -1,0 +1,32 @@
+{% block content %}
+
+<div style="text-align: center; padding: 100px 20px;">
+    <div style="font-size: 72px; font-weight: 800; color: #ef4444;">
+        500
+    </div>
+
+    <h2 style="margin: 10px 0 15px;">
+        서버 오류가 발생했습니다.
+    </h2>
+
+    <p style="color: #777; margin-bottom: 30px;">
+        서버에서 오류가 발생했습니다.<br>
+        잠시 후 다시 시도해주세요.
+    </p>
+
+    <a href="/dashboard"
+       style="
+           display: inline-block;
+           padding: 10px 22px;
+           background-color: #6aaa45;
+           color: white;
+           text-decoration: none;
+           border-radius: 6px;
+           font-weight: 600;
+       ">
+        대시보드로 이동
+    </a>
+
+</div>
+
+{% endblock %}

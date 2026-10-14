@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% set active_tab = 'control_mode' %}
+{% block title %}수경재배 환경 제어 및 모니터링 시스템{% endblock %}
+
+{% block content %}
+<!-- 사용자 CSS (style.css 적용) -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/control_mode.css') }}" />
+<div class="control-header">
+    <h2>제어 모드</h2>
+    <p>각 액추에이터 장치의 작동 상태를 수동으로 ON/OFF 설정하세요.</p>
+</div>
+
+<div class="control-card-container">
+    <form id="control-form" method="POST" action="/control_mode/save">
+        <div class="control-scroll-list">
+            <table class="control-table">
+                <thead>
+                    <tr>
+                        <th>장치 이름</th>
+                        <th>현재 상태</th>
+                        <th>제어 모드</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 1. FAN -->
+                    {% set item = control_mode_data.fan if control_mode_data and control_mode_data.fan else {} %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else true %}
+                    <tr>
+                        <td>FAN</td>
+                        <td id="current_state_FAN">{{actuators.fan.current}}</td>
+                        <td>
+                            <div class="toggle-wrapper">
+                                <span class="mode-text {% if actuators.fan.is_auto %}auto{% else %}manual{% endif %}">
+                                    {{ 'ON' if actuators.fan.is_auto else 'OFF' }}
+                                </span>
+                                <label class="switch">
+                                    <input type="checkbox" name="fan_auto" {% if actuators.fan.is_auto %}checked{% endif %}
+                                        onchange="toggleMode(this)" onclick="change_state(`FAN`)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </td>
+                        <td>온도와 습도를 적정 범위로 유지하기 위해 FAN을 제어합니다.</td>
+                    </tr>
+
+                    <!-- 2. 커튼 -->
+                    {% set item = control_mode_data.curtain if control_mode_data and control_mode_data.curtain else {}
+                    %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else true %}
+                    <tr>
+                        <td>커튼</td>
+                        <td id="current_state_CURTAIN">{{actuators.curtain.current}}</td>
+                        <td>
+                            <div class="toggle-wrapper">
+                                <span class="mode-text {% if actuators.curtain.is_auto %}auto{% else %}manual{% endif %}">
+                                    {{ 'ON' if actuators.curtain.is_auto else 'OFF' }}
+                                </span>
+                                <label class="switch">
+                                    <input type="checkbox" name="curtain_auto" {% if actuators.curtain.is_auto %}checked{% endif %}
+                                        onchange="toggleMode(this)" onclick="change_state(`CURTAIN`)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </td>
+                        <td>적정 조도를 유지하기 위해 조도에 따라 커튼을 제어합니다.</td>
+                    </tr>
+
+                    <!-- 3. LED -->
+                    {% set item = control_mode_data.led if control_mode_data and control_mode_data.led else {} %}
+                    {% set is_auto = item.is_auto if item.is_auto is defined else true %}
+                    <tr>
+                        <td>LED</td>
+                        <td id="current_state_LED">{{actuators.led.current}}</td>
+                        <td>
+                            <div class="toggle-wrapper">
+                                <span class="mode-text {% if actuators.led.is_auto %}auto{% else %}manual{% endif %}">
+                                    {{ 'ON' if actuators.led.is_auto else 'OFF' }}
+                                </span>
+                                <label class="switch">
+                                    <input type="checkbox" name="led_auto" {% if actuators.led.is_auto %}checked{% endif %}
+                                        onchange="toggleMode(this)" onclick="change_state(this, `LED`)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </td>
+                        <td>적정 조도를 유지하기 위해 LED를 제어합니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+<script src="{{ url_for('static', filename='js/control_mode.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% set active_tab = 'pump' %}
+{% block title %}펌프 - 수경재배 환경 제어 시스템{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/actuator.css') }}" />
+<!-- 제목 -->
+<div class="sensor-header-row">
+    <div class="title-section" style="display: flex; align-items: center; gap: 10px;">
+        <h2 class="device-title" style="margin: 0;">펌프</h2>
+        <span class="status-badge"
+            style="background-color: #e8f5e9; color: #2b7819; border: 1.5px solid #2b7819; font-weight: bold;">동작중</span>
+    </div>
+
+    <!-- 현재값 카드 -->
+    <div class="card-box sensor-summary-card" style="width: auto; min-width: 280px;">
+        <div class="card-title">현재 값</div>
+        <div class="sensor-big-value" style="font-size: 26px;">
+            유량 <span style="font-weight: 800;">{{ pump_data.flow_rate | default('0.5') }}</span> <span
+                class="unit">L/min</span>
+            <span style="color: #ccc; margin: 0 8px;">|</span>
+            수위 <span style="font-weight: 800;">{{ pump_data.water_level | default('27') }}</span> <span
+                class="unit">cm</span>
+        </div>
+    </div>
+</div>
+
+<!-- 현재 시각, 새로고침 -->
+<div class="refresh-bar" style="margin-top: 8px;">
+    <span>현재 시각 : <span id="current-time"></span></span>
+    <img src="{{ url_for('static', filename='img/refresh.png') }}" id="btn-refresh" class="btn-refresh" onclick="location.reload();">
+</div>
+
+<!-- 중단 제어, 상태 영역 -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+
+    <!-- 현재 상태 -->
+    <div class="card-box" style="padding: 16px;">
+        <div style="font-size: 14px; color: #555; margin-bottom: 8px;">
+            현재 상태 : <strong style="color: #2b7819;">펌프 ON</strong>
+        </div>
+        <div style="font-size: 15px; font-weight: 600; color: #333;">
+            현재 급수 진행중입니다.
+        </div>
+    </div>
+
+    <!-- 제어모드, 자동 동작 조건 -->
+    <div class="card-box" style="padding: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <div class="card-title" style="margin-bottom: 6px;">제어모드</div>
+                <div
+                    style="display: flex; align-items: center; gap: 16px; font-size: 18px; font-weight: bold; color: #2b7819;">
+                    <span>자동 모드</span>
+                    <span
+                        style="display: inline-block; width: 16px; height: 16px; background-color: #68b855; border-radius: 50%;"></span>
+                    <span style="color: #888; font-weight: normal; margin-left: 8px;">수동 모드</span>
+                    <span
+                        style="display: inline-block; width: 16px; height: 16px; background-color: #ccc; border-radius: 50%;"></span>
+                </div>
+            </div>
+        </div>
+        <div
+            style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee; font-size: 13px; color: #666; line-height: 1.5;">
+            <strong style="color: #444;">자동 동작 조건</strong><br>
+            유량 및 수위 &lt; 기준치 &rarr; 펌프 ON<br>
+            유량 및 수위 &ge; 기준치 &rarr; 펌프 OFF
+        </div>
+    </div>
+
+</div>
+
+<!-- 로그 테이블 -->
+<div class="card-box col-span-2">
+    <div class="table-header-bar">
+        <div class="card-title">최근 로그 (최근 24시간)</div>
+        <button class="btn-csv">CSV 다운로드</button>
+    </div>
+
+    <table class="log-table">
+        <thead>
+            <tr>
+                <th>시간</th>
+                <th>유량 (L/min)</th>
+                <th>수위 (cm)</th>
+                <th>유량 상태</th>
+                <th>수위 상태</th>
+                <th>설명</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>2026-08-16 14:30</td>
+                <td>0.5</td>
+                <td>27</td>
+                <td style="color: #e53e3e; font-weight: bold;">부족</td>
+                <td class="text-blue" style="font-weight: bold;">양호</td>
+                <td>유량이 부족합니다.</td>
+            </tr>
+            <tr>
+                <td>2026-08-16 14:29</td>
+                <td>0.5</td>
+                <td>27</td>
+                <td style="color: #e53e3e; font-weight: bold;">부족</td>
+                <td class="text-blue" style="font-weight: bold;">양호</td>
+                <td>유량이 부족합니다.</td>
+            </tr>
+            <tr>
+                <td>2026-08-16 14:28</td>
+                <td>0.5</td>
+                <td>27</td>
+                <td style="color: #e53e3e; font-weight: bold;">부족</td>
+                <td class="text-blue" style="font-weight: bold;">양호</td>
+                <td>유량이 부족합니다.</td>
+            </tr>
+            <tr>
+                <td>2026-08-16 14:27</td>
+                <td>0.6</td>
+                <td>27</td>
+                <td style="color: #e53e3e; font-weight: bold;">부족</td>
+                <td class="text-blue" style="font-weight: bold;">양호</td>
+                <td>유량이 부족합니다.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <span class="page-arrow">&lt;&lt;</span>
+        <strong class="page-num active">1</strong>
+        <span class="page-num">2</span>
+        <span class="page-num">3</span>
+        <span class="page-num">4</span>
+        <span class="page-num">5</span>
+        <span class="page-arrow">&gt;&gt;</span>
+    </div>
+</div>
+<script>
+    function getFormattedNow() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mi = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+    }
+    document.getElementById('current-time').innerText = getFormattedNow();
+</script>
+{% endblock %}

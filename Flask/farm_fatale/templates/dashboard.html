@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+
+{% set active_tab = 'home' %}
+{% block title %}통합 대시보드 - 수경재배 환경 제어 시스템{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 20px;
+    }
+
+    .page-header h2 {
+        font-size: 24px;
+        font-weight: 800;
+        color: #222;
+        margin: 0 0 4px 0;
+    }
+
+    .page-header p {
+        font-size: 13.5px;
+        color: #666;
+        margin: 0;
+    }
+
+    .update-info {
+        font-size: 13px;
+        color: #666;
+    }
+
+    .btn-refresh {
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        padding: 3px 8px;
+        font-size: 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 6px;
+    }
+
+    /* 게이지 카드 그리드 */
+    .sensor-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .sensor-card {
+        background-color: #ffffff;
+        border-radius: 14px;
+        border: 2px solid #afb3b9;
+        padding: 16px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s, border-color 0.2s;
+        user-select: none;
+    }
+
+    .sensor-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 상태별 테두리 및 뱃지 */
+    .sensor-card.status-good {
+        border-color: #a4d38c;
+    }
+
+    .sensor-card.status-warning {
+        border-color: #f59e0b;
+    }
+
+    .sensor-card.status-danger {
+        border-color: #ef4444;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+    }
+
+    .sensor-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .status-badge {
+        font-size: 13px;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+
+    .status-good .status-badge {
+        color: #2e7d32;
+        background-color: #e8f5e9;
+    }
+
+    .status-warning .status-badge {
+        color: #d97706;
+        background-color: #fef3c7;
+    }
+
+    .status-danger .status-badge {
+        color: #dc2626;
+        background-color: #fee2e2;
+    }
+
+    /* Canvas 게이지 컨테이너 */
+    .gauge-container {
+        position: relative;
+        width: 100%;
+        height: 115px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+    }
+
+    .gauge-canvas {
+        width: 180px;
+        height: 100px;
+    }
+
+    .gauge-value {
+        position: absolute;
+        bottom: 8px;
+        font-size: 22px;
+        font-weight: 800;
+        color: #222;
+    }
+
+    .gauge-unit {
+        font-size: 13px;
+        font-weight: 500;
+        color: #666;
+    }
+
+    .card-footer {
+        text-align: center;
+        font-size: 12px;
+        color: #777;
+        margin-top: 2px;
+    }
+
+    /* 하단 액추에이터 제어 상태 박스  */
+    .actuator-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .actuator-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 24px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .actuator-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .actuator-state {
+        font-size: 13px;
+        font-weight: 800;
+        padding: 6px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .state-ON {
+        background-color: #a4d38c;
+        color: #ffffff;
+    }
+
+    .state-ON-FIRE {
+        background-color: #ef4444;
+        color: #ffffff;
+    }
+
+    .state-OFF {
+        background-color: #e2e8f0;
+        color: #64748b;
+    }
+
+    .stream {
+        margin-top: 20px;
+    }
+</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+<div class="page-header">
+    <div>
+        <h2>전체 환경</h2>
+        <p>모든 센서의 실시간 값을 한눈에 확인하세요.</p>
+    </div>
+    <div class="update-info">
+        마지막 업데이트 : <strong id="update-time">{{ update_time }}</strong>
+        <img src="{{ url_for('static', filename='img/refresh.png') }}" id="btn-refresh" class="btn-refresh3" onclick="location.reload()">
+    </div>
+</div>
+
+<!-- 상단 8개 센서 게이지 카드 그리드 -->
+<div class="sensor-grid">
+    <!-- 1. 온도 -->
+    <div class="sensor-card status-{{ sensors.temp.status }}" onclick="location.href='/temp'">
+        <div class="card-header">
+            <span class="sensor-name">온도</span>
+            <span class="status-badge">{{ sensors.temp.label }}</span>
+        </div>
+        <div class="gauge-container">
+            <canvas class="gauge-canvas" data-value="{{ sensors.temp.value }}" data-min="{{ sensors.temp.min }}"
+                data-max="{{ sensors.temp.max }}" data-status="{{ sensors.temp.status }}"></canvas>
+            <div class="gauge-value">{{ sensors.temp.value }} <span class="gauge-unit">{{ sensors.temp.unit }}</span>
+            </div>
+        </div>
+        <div class="card-footer">최적 {{ sensors.temp.opt_min }} ~ {{ sensors.temp.opt_max }} {{ sensors.temp.unit }}
+        </div>
+    </div>
+
+    <!-- 2. 습도 -->
+    <div class="sensor-card status-{{ sensors.humid.status }}" onclick="location.href='/humid'">
+        <div class="card-header">
+            <span class="sensor-name">습도</span>
+            <span class="status-badge">{{ sensors.humid.label }}</span>
+        </div>
+        <div class="gauge-container">
+            <canvas class="gauge-canvas" data-value="{{ sensors.humid.value }}" data-min="{{ sensors.humid.min }}"
+                data-max="{{ sensors.humid.max }}" data-status="{{ sensors.humid.status }}"></canvas>
+            <div class="gauge-value">{{ sensors.humid.value }} <span class="gauge-unit">{{ sensors.humid.unit }}</span>
+            </div>
+        </div>
+        <div class="card-footer">최적 {{ sensors.humid.opt_min }} ~ {{ sensors.humid.opt_max }} {{ sensors.humid.unit }}
+        </div>
+    </div>
+
+    <!-- 3. 조도 -->
+    <div class="sensor-card status-{{ sensors.light.status }}" onclick="location.href='/light'">
+        <div class="card-header">
+            <span class="sensor-name">조도</span>
+            <span class="status-badge">{{ sensors.light.label }}</span>
+        </div>
+        <div class="gauge-container">
+            <canvas class="gauge-canvas" data-value="{{ sensors.light.value }}" data-min="{{ sensors.light.min }}"
+                data-max="{{ sensors.light.max }}" data-status="{{ sensors.light.status }}"></canvas>
+            <div class="gauge-value">{{ sensors.light.value }} <span class="gauge-unit">{{ sensors.light.unit }}</span>
+            </div>
+        </div>
+        <div class="card-footer">최적 {{ sensors.light.opt_min }} ~ {{ sensors.light.opt_max }} {{ sensors.light.unit }}
+        </div>
+    </div>
+
+    <!-- 4. 수온 -->
+    <div class="sensor-card status-{{ sensors.watertemp.status }}" onclick="location.href='/watertemp'">
+        <div class="card-header">
+            <span class="sensor-name">수온</span>
+            <span class="status-badge">{{ sensors.watertemp.label }}</span>
+        </div>
+        <div class="gauge-container">
+            <canvas class="gauge-canvas" data-value="{{ sensors.watertemp.value }}"
+                data-min="{{ sensors.watertemp.min }}" data-max="{{ sensors.watertemp.max }}"
+                data-status="{{ sensors.watertemp.status }}"></canvas>
+            <div class="gauge-value">{{ sensors.watertemp.value }} <span class="gauge-unit">{{ sensors.watertemp.unit
+                    }}</span></div>
+        </div>
+        <div class="card-footer">최적 {{ sensors.watertemp.opt_min }} ~ {{ sensors.watertemp.opt_max }} {{
+            sensors.watertemp.unit }}</div>
+    </div>
+
+    <!-- 5. 유량 -->
+    <div class="sensor-card status-{{ sensors.flow.status }}" onclick="location.href='/flow'">
+        <div class="card-header">
+            <span class="sensor-name">유량</span>
+            <span class="status-badge">{{ sensors.flow.label }}</span>
+        </div>
+        <div class="gauge-container">
+            <canvas class="gauge-canvas" data-value="{{ sensors.flow.value }}" data-min="{{ sensors.flow.min }}"
+                data-max="{{ sensors.flow.max }}" data-status="{{ sensors.flow.status }}"></canvas>
+            <div class="gauge-value">{{ sensors.flow.value }} <span class="gauge-unit">{{ sensors.flow.unit }}</span>
+            </div>
+        </div>
+        <div class="card-footer">최적 {{ sensors.flow.opt_min }} ~ {{ sensors.flow.opt_max }} {{ sensors.flow.unit }}
+        </div>
+    </div>
+
+    <!-- 6. pH -->
+    <div class="sensor-card status-{{ sensors.ph.status }}" onclick="location.href='/ph'">
+        <div class="card-header">
+            <span class="sensor-name">pH</span>
+            <span class="status-badge">{{ sensors.ph.label }}</span>
+        </div>
+        <div class="gauge-container">
+            <canvas class="gauge-canvas" data-value="{{ sensors.ph.value }}" data-min="{{ sensors.ph.min }}"
+                data-max="{{ sensors.ph.max }}" data-status="{{ sensors.ph.status }}"></canvas>
+            <div class="gauge-value">{{ sensors.ph.value }} <span class="gauge-unit">{{ sensors.ph.unit }}</span></div>
+        </div>
+        <div class="card-footer">최적 {{ sensors.ph.opt_min }} ~ {{ sensors.ph.opt_max }} {{ sensors.ph.unit }}</div>
+    </div>
+
+    <!-- 7. TDS -->
+    <div class="sensor-card status-{{ sensors.TDS.status }}" onclick="location.href='/tds'">
+        <div class="card-header">
+            <span class="sensor-name">TDS</span>
+            <span class="status-badge">{{ sensors.TDS.label }}</span>
+        </div>
+        <div class="gauge-container">
+            <canvas class="gauge-canvas" data-value="{{ sensors.TDS.value }}" data-min="{{ sensors.TDS.min }}"
+                data-max="{{ sensors.TDS.max }}" data-status="{{ sensors.TDS.status }}"></canvas>
+            <div class="gauge-value">{{ sensors.TDS.value }} <span class="gauge-unit">{{ sensors.TDS.unit }}</span>
+            </div>
+        </div>
+        <div class="card-footer">최적 {{ sensors.TDS.opt_min }} ~ {{ sensors.TDS.opt_max }} {{ sensors.TDS.unit }}</div>
+    </div>
+    <!-- CCTV -->
+    <div class="sensor-card" onclick="location.href='/cctv'">
+        <div class="card-header">
+            <span class="sensor-name">CCTV</span>
+        </div>
+        <div class="gauge-container">
+            <img id="stream" class="stream" src="/camera" crossorigin="anonymous" style="width:240px; height:135px"/>
+        </div>
+    </div>
+</div>
+
+<!-- 하단 액추에이터 상태 카드 -->
+<div class="actuator-grid">
+    <div class="actuator-card" onclick="location.href='/fire'">
+        <span class="actuator-title">화재 감지</span>
+        {% if (3000 <= sensors.fire.value) and (sensors.fire.value <= 4095) or not video_flag %}
+        <span class="actuator-state state-OFF">미감지</span>
+        {% else %}
+        <span class="actuator-state state-ON-FIRE">감지</span>
+        {% endif %}
+    </div>
+    <div class="actuator-card">
+        <span class="actuator-title">FAN</span>
+        <span class="actuator-state state-{{actuators.fan.current}}" onclick="change_state(this, `FAN`)">{{actuators.fan.current}}</span>
+    </div>
+    <div class="actuator-card">
+        <span class="actuator-title">커튼</span>
+        <span class="actuator-state state-{{actuators.curtain.current}}" onclick="change_state(this, `CURTAIN`)">{{actuators.curtain.current}}</span>
+    </div>
+    <div class="actuator-card">
+        <span class="actuator-title">LED</span>
+        <span class="actuator-state state-{{actuators.led.current}}" onclick="change_state(this, `LED`)">{{actuators.led.current}}</span>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

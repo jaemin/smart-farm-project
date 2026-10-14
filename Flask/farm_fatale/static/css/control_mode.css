@@ -1,0 +1,280 @@
+.control-header {
+    margin-bottom: 16px;
+}
+
+.control-header h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #222;
+    margin: 0 0 4px 0;
+}
+
+.control-header p {
+    font-size: 13.5px;
+    color: #666;
+    margin: 0;
+}
+
+.control-card-container {
+    background-color: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e0e0e0;
+    padding: 24px 24px 0px 24px;
+    min-height: 650px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.control-scroll-list {
+    max-height: 580px;
+    overflow-y: auto;
+    padding-right: 12px;
+    margin-bottom: 16px;
+}
+
+.control-scroll-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.control-scroll-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.control-scroll-list::-webkit-scrollbar-thumb {
+    background: #c8c8c8;
+    border-radius: 4px;
+}
+
+.control-scroll-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.control-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    table-layout: fixed;
+    /* 열 너비 고정 적용 */
+}
+
+.control-table th {
+    text-align: left;
+    font-size: 14px;
+    font-weight: bold;
+    color: #777777;
+    padding: 0 16px 8px 16px;
+}
+
+.control-table tbody tr {
+    height: 60px;
+}
+
+.control-table td {
+    background-color: #ffffff;
+    border-top: 1.5px solid #dcdcdc;
+    border-bottom: 1.5px solid #dcdcdc;
+    padding: 10px 18px;
+    font-size: 15px;
+    vertical-align: middle;
+    box-sizing: border-box;
+    height: 60px;
+}
+
+/* 1. 장치 이름 */
+.control-table tr td:first-child,
+.control-table th:first-child {
+    width: 10%;
+}
+
+.control-table tr td:first-child {
+    border-left: 1.5px solid #dcdcdc;
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+    font-weight: 700;
+    font-size: 18px;
+    color: #222222;
+}
+
+/* 2. 현재 상태 */
+.control-table tr td:nth-child(2),
+.control-table th:nth-child(2) {
+    width: 12%;
+}
+
+.control-table tr td:nth-child(2) {
+    font-weight: 600;
+    font-size: 16px;
+    color: #333333;
+}
+
+/* 3. 제어 모드 (너비 확보로 줄바꿈 방지) */
+.control-table tr td:nth-child(3),
+.control-table th:nth-child(3) {
+    width: 13%;
+}
+
+/* 4. 설정 범위 / 값 */
+.control-table tr td:nth-child(4),
+.control-table th:nth-child(4) {
+    width: 20%;
+}
+
+.control-table tr td:nth-child(4) {
+    color: #888888;
+    font-size: 13px;
+}
+
+/* 5. 설명 (오른쪽 여백 및 영역 극대화) */
+.control-table tr td:last-child,
+.control-table th:last-child {
+    width: auto;
+}
+
+.control-table tr td:last-child {
+    border-right: 1.5px solid #dcdcdc;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    color: #666666;
+    font-size: 13.5px;
+    line-height: 1.4;
+    padding-left: 24px;
+    /* 설명 텍스트를 오른쪽으로 더 밀어주는 여백 */
+    word-break: keep-all;
+}
+
+.toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+    /* 자동/수동 텍스트 절대 줄바꿈 방지 */
+}
+
+.mode-text {
+    font-size: 16px;
+    font-weight: bold;
+    min-width: 32px;
+    /* 텍스트 공간 고정 */
+    display: inline-block;
+}
+
+.mode-text.auto {
+    color: #2b7819;
+}
+
+.mode-text.manual {
+    color: #777777;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #b0b0b0;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input:checked+.slider {
+    background-color: #90ce79;
+}
+
+input:checked+.slider:before {
+    transform: translateX(24px);
+}
+
+.range-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+}
+
+.range-box input {
+    width: 55px;
+    height: 32px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+}
+
+.range-box input:focus {
+    border-color: #2b7819;
+}
+
+.is-hidden {
+    display: none !important;
+}
+
+.bottom-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    margin-bottom: 10px;
+}
+
+.btn-save-setting {
+    background-color: #a4d38c;
+    color: #ffffff;
+    border: none;
+    padding: 10px 28px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-save-setting:hover {
+    background-color: #8ec274;
+}
+
+.btn-reset-setting {
+    background-color: #ffffff;
+    color: #666666;
+    border: 1.5px solid #d0d0d0;
+    padding: 10px 22px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-reset-setting:hover {
+    background-color: #f5f5f5;
+}

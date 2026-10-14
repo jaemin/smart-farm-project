@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% set active_tab = 'fire' %}
+{% block title %}화재 - 수경재배 환경 제어 시스템{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/actuator.css') }}" />
+
+<!-- 제목 -->
+<div class="sensor-header-row">
+    <div class="title-section" style="display: flex; align-items: center; gap: 10px;">
+        <h2 class="device-title" style="margin: 0;">화재</h2>
+
+        {% if fire_data.status == 'ON' %}
+
+        <span class="status-badge" style="background-color: #e8f5e9;
+           color: #2b7819;
+           border: 1.5px solid #2b7819;
+           font-weight: bold;">
+            ON
+        </span>
+
+        {% else %}
+        <span class="status-badge" style="background-color: #f1f1f1;
+        color: #777;
+        border: 1.5px solid #aaa;
+        font-weight: bold;">
+            OFF
+        </span>
+        {% endif %}
+    </div>
+
+    <!-- 현재값 카드 -->
+    <div class="card-box sensor-summary-card" style="width: auto; min-width: 200px;">
+        <div class="card-title">현재 값</div>
+
+        <div class="sensor-big-value">
+            <span id="current-val">--</span>
+            <span class="unit">ADC</span>
+        </div>
+        <div class="optimal-range">
+            최적
+            <span id="opt-min">500</span>
+            ~
+            <span id="opt-max">1500</span>
+            ADC
+        </div>
+    </div>
+</div>
+
+<!-- 마지막 업데이트 -->
+<div class="summary-area">
+    <div class="refresh-bar">
+        <span>마지막 업데이트 : <span id="current-time"></span></span>
+        <!-- 새로고침 버튼 (클릭 시 AJAX 데이터 갱신) -->
+        <img src="{{ url_for('static', filename='img/refresh.png') }}" id="btn-refresh" class="btn-refresh">
+    </div>
+
+    <!-- 현재 디바이스 상태 -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+
+        <!-- 현재 상태, 상세설명 -->
+        <div class="card-box" style="padding: 16px;">
+            <div style="font-size: 14px; color: #555; margin-bottom: 8px;">
+                현재 화재 감지 상태 :
+                {% if fire_data.status == 'ON' %}
+                <strong style="color: #2b7819;">화재 감지 ON</strong>
+                {% else %}
+                <strong style="color: #888;">화재 감지 OFF</strong>
+                {% endif %}
+            </div>
+            <div style="font-size: 15px; font-weight: 600; color: #333;">
+                {% if fire_data.status == 'ON' %}
+                불꽃 센서 값이 설정 범위를 초과하여 화재 감지가 작동합니다.
+                {% else %}
+                불꽃 센서 값이 적정 범위 내에 있습니다.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ※삭제 : 제어모드, 자동 동작 조건 -->
+
+        <!-- 로그 테이블 -->
+        <div class="card-box col-span-2">
+            <div class="table-header-bar">
+                <div class="card-title">
+                    최근 로그 (최근 24시간)
+                </div>
+                <button class="btn-csv">
+                    CSV 다운로드
+                </button>
+            </div>
+
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>시간</th>
+                        <th>동작구분</th>
+                        <th>제어주체</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody id="fire-log-body">
+                    {% for log in fire_logs %}
+                    <tr>
+                        <td>
+                            {{ log.recorded_at }}
+                        </td>
+                        <td>
+                            {% if log.state == 'ON' %}
+                            <span class="text-blue" style="font-weight: bold;">
+                                ON
+                            </span>
+                            {% else %}
+                            <span style="color: #e53e3e; font-weight: bold;">
+                                OFF
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ log.control_type }}
+                        </td>
+                        <td>
+                            {{ log.description }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #999; padding: 30px;">
+                            최근 24시간 동안 화재가 감지된 내역이 없습니다.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- 페이지네이션 -->
+            <div class="pagination-wrapper mt-3" style="display: flex; justify-content: center;">
+                <nav>
+                    <ul class="pagination mb-0" id="fire-pagination" style="display: inline-flex;
+                       list-style: none;
+                       gap: 5px;
+                       padding: 0;">
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <script>
+            function getFormattedNow() {
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mi = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+            }
+            document.getElementById('current-time').innerText = getFormattedNow();
+
+            // 우측 상단 현재값 카드 : 불꽃 센서 값 가져오기 
+            // sensor_seq : 8, device_seq : 7
+            async function loadFlameValue() {
+                try {
+                    const response =
+                        await fetch('/api/sensor/8/data');
+                    if (!response.ok) {
+                        throw new Error(
+                            '불꽃 센서 데이터를 가져오지 못했습니다.');
+                    }
+                    const data =
+                        await response.json();
+                    // 현재 불꽃 센서 값
+                    if (data.current &&
+                        data.current.value !== undefined) {
+                        document.getElementById('current-val').innerText = data.current.value;
+                    }
+                    // 최적 범위
+                    if (data.current) {
+                        document.getElementById('opt-min').innerText = data.current.min;
+                        document.getElementById('opt-max').innerText = data.current.max;
+                    }
+                } catch (error) {
+                    console.error(
+                        '조도 데이터 오류:',
+                        error
+                    );
+                }
+            }
+
+            // 페이지 지정
+            let currentPage = 1;
+            const PAGE_SIZE = 5;
+
+            // 화재 감지 로그 가져오기
+            async function loadFireLogs(page = 1) {
+                try {
+                    const response = await fetch(`/api/fire/logs?page=${page}&per_page=${PAGE_SIZE}`);
+
+                    if (!response.ok) {
+                        throw new Error(
+                            '화재 감지 로그를 가져오지 못했습니다.');
+                    }
+                    const data = await response.json();
+                    const tbody = document.getElementById('fire-log-body');
+                    tbody.innerHTML = '';
+                    if (data.logs.length === 0) {
+                        tbody.innerHTML = `
+            <tr>
+                <td colspan="4"
+                    style="text-align: center;
+                    color: #999;
+                    padding: 30px;">
+                    최근 24시간 동안 화재가 감지된 내역이 없습니다.
+                </td>
+            </tr>`;
+                    }
+                    else {
+                        data.logs.forEach(log => {
+                            const row = document.createElement('tr');
+                            let stateHtml = '';
+                            if (log.action === 'ON') {
+                                stateHtml = `
+                    <span class="text-blue"style="font-weight: bold;">ON</span>`;
+                            } else {
+                                stateHtml = `
+                    <span style="color: #e53e3e; font-weight: bold;">OFF</span>`;
+                            }
+                            row.innerHTML = `<td>${log.recorded_at}</td>
+                    <td>${stateHtml}</td>
+                    <td>${log.control_source}</td>
+                    <td>${log.description}</td>`;
+                            tbody.appendChild(row);
+                        });
+                    }
+                    currentPage = data.pagination.current_page;
+                    renderFirePagination(data.pagination);
+                } catch (error) { console.error('화재 감지 로그 오류:', error); }
+            }
+
+            // 페이지네이션
+            function renderFirePagination(pagination) {
+                const paginationList = document.getElementById('fire-pagination');
+                const totalPages = pagination.total_pages;
+                const page = pagination.current_page;
+                let html = '';
+                const pageBlockSize = 10;
+
+                // 현재 페이지가 어느 10개 묶음인지 계산
+                const currentBlock = Math.ceil(page / pageBlockSize);
+                const startPage = (currentBlock - 1) * pageBlockSize + 1;
+                let endPage = startPage + pageBlockSize - 1;
+                if (endPage > totalPages) { endPage = totalPages; }
+
+                // 이전 10페이지 묶음
+                if (startPage > 1) {
+                    html += `
+        <li>
+            <a href="#" onclick="loadFireLogs(${startPage - 1});
+            return false;"
+                style= "padding: 6px 12px;
+                        border: 1px solid #ddd;
+                        text-decoration: none;
+                        border-radius: 4px;
+                        display: inline-block;">
+                &laquo;
+            </a>
+        </li>`;
+                }
+                // 페이지 번호
+                for (let i = startPage; i <= endPage; i++) {
+                    const activeStyle = (i === page)
+                        ? 'font-weight: bold; background-color: #68b855; color: white; border-color: #68b855;'
+                        : 'background-color: #f8f9fa; color: #333;';
+                    html += `
+        <li>
+            <a href="#"
+                onclick="loadFireLogs(${i});
+                        return false;"
+                style="padding: 6px 12px;
+                        border: 1px solid #ddd;
+                        text-decoration: none;
+                        border-radius: 4px;
+                        display: inline-block;
+                        ${activeStyle}">${i}
+            </a>
+        </li> `;
+                }
+                // 다음 10페이지 묶음
+                if (endPage < totalPages) {
+                    html += `
+        <li>
+            <a href="#" onclick="loadFireLogs(${endPage + 1});
+                        return false;"
+                style="padding: 6px 12px;
+                        border: 1px solid #ddd;
+                        text-decoration: none;
+                        border-radius: 4px;
+                        display: inline-block;">
+                &raquo;
+            </a>
+        </li>`;
+                }
+                paginationList.innerHTML = html;
+            }
+            // 불꽃 센서 값 가져오기
+            //loadLightValue();
+            loadFlameValue();
+            // 불꽃 로그 가져오기
+            loadFireLogs(1);
+        </script>
+        {% endblock %}

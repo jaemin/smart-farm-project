@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}수경재배 환경 제어 및 모니터링 시스템{% endblock %}</title>
+        <!-- 사용자 CSS (style.css 적용) -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+    </head>
+    <body>
+        <div class="app-container">
+            <!-- 공통 사이드바 -->
+            <dialog class="sidebar" id="leftmenu">
+                <div class="closeBtn" id="leftcloseBtn">
+                    <img src="{{ url_for('static', filename='img/x.png')}}"/>
+                </div>
+                <div class="sidebar-header">
+                    <h1 class="logo-title">수경재배</h1>
+                    <div class="logo-sub">환경 제어 및 모니터링 시스템</div>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="/dashboard" class="nav-item {% if active_tab == 'home' %}active{% endif %}">현재 상태</a>
+                    {% if user_seq == 1%}
+                        <a href="/control_mode" class="nav-item {% if active_tab == 'control_mode' %}active{% endif %}">제어 모드</a>
+                        <a href="/sensor_range" class="nav-item {% if active_tab == 'sensor_range' %}active{% endif %}">센서 작동 범위 설정</a>
+                    {% endif %}
+                    <a href="/alarm" class="nav-item {% if active_tab == 'alarm' %}active{% endif %}">이상 알람</a>
+                    <a href="/cctv" class="nav-item {% if active_tab == 'cctv' %}active{% endif %}">CCTV 화면</a>
+                    <a href="/data" class="nav-item {% if active_tab == 'data' %}active{% endif %}">데이터 통계</a>
+                </nav>
+            </dialog>
+            
+            <!-- 공통 유저 사이드바 -->
+            <dialog class="user-sidebar" id="rightmenu">
+                <div class="closeBtn" id="rightcloseBtn">
+                    <img src="{{ url_for('static', filename='img/x.png')}}"/>
+                </div>
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li>내 정보</li>
+                        <li>이름</li>
+                        <li>{{user_name}}</li>
+                        <li>아이디</li>
+                        <li>{{user_id}}</li>
+                        <li>이메일</li>
+                        <li>{{email_address}}</li>
+                        <li>전화번호</li>
+                        <li>{{user_tel}}</li>
+                        <li><a href="/logout">로그아웃</a></li>
+                    </ul>
+                </nav>
+            </dialog>
+
+            <!-- 메인 영역 -->
+            <main class="main-wrapper">
+                <!-- 공통 상단 사용자 바 -->
+                <header class="header-container">
+                    <div class="user-info-bar">
+                        <img src="{{ url_for('static', filename='img/menu.png')}}" class="openBtn" id="leftopenBtn"/>
+                        <span class="user-name openBtn" id="rightopenBtn">{{user_name}} 님</span>
+                    </div>
+
+                    <!-- 각 페이지별 탭  -->
+                    {% block nav_tabs %}
+                    <nav class="nav-tab-bar">
+                        <a href="/dashboard" class="nav-tab-item {% if active_tab == 'all' %}active{% endif %}">전체</a>
+                        <a href="/temp" class="nav-tab-item {% if active_tab == 'temp' %}active{% endif %}">온도</a>
+                        <a href="/humid" class="nav-tab-item {% if active_tab == 'humid' %}active{% endif %}">습도</a>
+                        <a href="/light" class="nav-tab-item {% if active_tab == 'light' %}active{% endif %}">조도</a>
+                        <a href="/watertemp" class="nav-tab-item {% if active_tab == 'watertemp' %}active{% endif %}">수온</a>
+                        <a href="/flow" class="nav-tab-item {% if active_tab == 'flow' %}active{% endif %}">유량</a>
+                        <a href="/ph" class="nav-tab-item {% if active_tab == 'ph' %}active{% endif %}">pH</a>
+                        <a href="/tds" class="nav-tab-item {% if active_tab == 'tds' %}active{% endif %}">TDS</a>
+                        <a href="/fan" class="nav-tab-item {% if active_tab == 'fan' %}active{% endif %}">FAN</a>
+                        <a href="/curtain" class="nav-tab-item {% if active_tab == 'curtain' %}active{% endif %}">커튼</a>
+                        <a href="/led" class="nav-tab-item {% if active_tab == 'led' %}active{% endif %}">LED</a>
+                        <a href="/fire" class="nav-tab-item {% if active_tab == 'fire' %}active{% endif %}">화재</a>
+                    </nav>
+                    {% endblock %}
+                </header>
+                <!-- 페이지별 콘텐츠 -->
+                <section class="content-body">{% block content %}{% endblock %}</section>
+            </main>
+        </div>
+    </body>
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+</html>

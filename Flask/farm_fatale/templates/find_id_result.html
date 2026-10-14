@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>아이디 찾기 결과</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/users_base.css') }}">
+</head>
+
+<body>
+
+    <div class="signup-page">
+        <div class="signup-container">
+
+            <div class="signup-title">
+                <h1>수경재배</h1>
+                <h2>환경제어 및 모니터링 시스템</h2>
+            </div>
+
+            <div class="card signup-card">
+
+                <div class="card-body">
+
+                    <h3 class="signup-heading">
+                        아이디 찾기
+                    </h3>
+
+                    <div style="text-align: center; margin: 30px 0;">
+
+                        <p style="margin-bottom: 10px;">
+                            가입된 아이디는
+                        </p>
+
+                        <strong style="font-size: 24px;">
+                            {{ user_id }}
+                        </strong>
+
+                        <p style="margin-top: 10px;">
+                            입니다.
+                        </p>
+
+                    </div>
+
+                    <div class="signup-links mt-4">
+
+                        <a href="/login"
+                           class="btn btn-success w-100"
+                           style="display: block; text-align: center; text-decoration: none; box-sizing: border-box;">
+
+                            로그인하기
+
+                        </a>
+
+                    </div>
+
+                    <div class="signup-links">
+
+                        <a href="/find_password">
+                            비밀번호 찾기
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <script>
+                alert("{{ message }}");
+            </script>
+        {% endfor %}
+    {% endwith %}
+</body>
+</html>

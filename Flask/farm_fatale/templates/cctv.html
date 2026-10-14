@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% set active_tab = 'cctv' %}
+{% block title %}CCTV 화면 - 수경재배 환경 제어 시스템{% endblock %}
+
+{% block content %}
+<style>
+    .cctv-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 16px;
+    }
+
+    .cctv-header h2 {
+        font-size: 24px;
+        font-weight: 800;
+        color: #222;
+        margin: 0 0 4px 0;
+    }
+
+    .cctv-header p {
+        font-size: 13.5px;
+        color: #666;
+        margin: 0;
+    }
+
+    /* 우측 상단 연두색 화면 다운로드 버튼 */
+    .btn-download {
+        background-color: #a4d38c;
+        color: #ffffff;
+        border: none;
+        padding: 8px 20px;
+        font-size: 15px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-download:hover {
+        background-color: #8ec274;
+    }
+
+    .btn-download:active {
+        transform: scale(0.98);
+    }
+
+    .cctv-card-container {
+        background-color: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e0e0e0;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* 스케치 테두리와 꽉 차게 맞춰지는 비디오/이미지 프레임 */
+    .video-frame-wrapper {
+        width: 100%;
+        max-width: 1280px;
+        background-color: #fafafa;
+        border: 2px solid #555555;
+        border-radius: 6px;
+        padding: 10px;
+        box-sizing: border-box;
+        box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.08);
+        text-align: center;
+    }
+
+    .video-stream {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+        display: block;
+        border-radius: 2px;
+        object-fit: contain;
+        border: 1px solid #cccccc;
+    }
+</style>
+
+<div class="cctv-header-container">
+    <div class="cctv-header">
+        <h2>CCTV 화면</h2>
+        <p>스마트팜 내부를 실시간으로 모니터링 할 수 있습니다.</p>
+    </div>
+    <a id="saveBtn" class="btn-download">화면 다운로드</a>
+</div>
+
+<div class="cctv-card-container">
+    <div class="video-frame-wrapper">
+        <!-- C:\workspace\farm_fatale\static\img\ 위치의 이미지 파일명을 아래 filename에 맞춰주세요 -->
+        <!-- <img id="cctv-feed" class="video-stream" src="{{ url_for('static', filename='img/cctv.JPG') }}" alt="CCTV Stream"> -->
+        <img id="stream" src="/camera"  crossorigin="anonymous" style="width:1120px; height:630px"/>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/cctv.js') }}"></script>
+{% endblock %}
